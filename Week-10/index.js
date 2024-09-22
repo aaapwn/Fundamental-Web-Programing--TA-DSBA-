@@ -1,46 +1,77 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const mysql = require('mysql');
 
 const app = express();
-const PORT = 3000;
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }))
 
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 
-// เชื่อมต่อฐานข้อมูล SQLite
-let db = new sqlite3.Database('./user_data.db', (err) => {
-  if (err) {
-    console.error(err.message);
-  }
-  console.log('Connected to the SQLite database.');
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'webpro-week8'
 });
 
-// Route สำหรับแสดงรายการผู้ใช้
-app.get('/users', (req, res) => {
-  const query = 'SELECT * FROM users';
-  db.all(query, (err, rows) => {
-    if (err) {
-      return res.send(err.message);
-    }
-    res.render('users', { users: rows });
-  });
+app.get('/login', (req, res) => {
+  return res.render('login');
 });
 
-app.get('/user/:id', (req, res) => {
-  const id = req.params.id;
-
-  db.get(`SELECT * FROM users WHERE id = ${id}`, (err, row) => {
-    if (err) {
-      return console.error(err.message);
-    }
-    if (!row) {
-      return res.status(404).send('User not found');
-    }
-    res.render('user_detail', { user: row });
-  });
+app.get('/register', (req, res) => {
+  return res.render('register');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    db.query(`SELECT * FROM customer WHERE username = '${username}'`, (err, result) => {
+        if (err) {
+            return res.status(500).send(err);
+        } else {
+            if (result.length > 0) {
+                if (result[0].password == password) {
+                    return res.send(`Welcome ${result[0].first_name}`);
+                } else {
+                    return res.send('Password or Username not match');
+                }
+            } else {
+                return res.send('Password or Username not match');
+            }
+        }
+    });
+});
+
+app.post('/register', (req, res) => {
+    const { username, first_name, last_name, email, password, confirm_password } = req.body;
+    db.query(`SELECT * FROM customer WHERE username = '${username}'`, (err, result) => {
+        if (err) {
+            return res.status(500).send(err.message);
+        } else {
+            if (result.length > 0) {
+                return res.send('Username already exist');
+            } else {
+                if (confirm_password == password) {
+                    db.query(`INSERT INTO customer (username, password, first_name, last_name, email) VALUES ('${username}', '${password}', '${first_name}', '${last_name}', '${email}')`, (err, result) => {
+                        if (err) {
+                            return res.status(500).send(err.message);
+                        } else {
+                            return res.send('Register success');
+                        }   
+                    });
+                } else {
+                    return res.send('Password not match');
+                }
+            }
+        }
+    });
+});
+
+const PORT = process.env.PORT || 3000;
+
+db.connect(function(err) {
+    if (err) throw err;
+    console.log("Database Connected!");
+    app.listen(PORT, () => {
+        console.log(`Server is running! \n> http://localhost:${PORT}`);
+    });
 });

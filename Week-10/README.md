@@ -1,8 +1,20 @@
-## ให้น้องเขียน Website แสดงข้อมูลต่าง ๆ ดังนี้
+## ให้น้อง ๆ ทำระบบ Login และ Register โดยมีเงื่อนไขดังนี้
 
-** ใช้ข้อมูลจาก [user_data.db](./user_data.db)
+### ระบบ Login
+- หากชื่อและรหัสผ่านไม่มีใน Database ให้แสดงข้อความ "Password or Username not match"
+- หาก Login สำเร็จ ให้แสดงข้อความ Welcome ตามด้วยชื่อจริงของ Customer
 
-`/users` ให้แสดงข้อมูลของ Users ทั้งหมด เป็นตารางที่แสดงข้อมูลของ Users โดยจะแสดง ID, First Name, Last Name, Username, Email และจะมีปุ่ม Detail ที่เมื่อกดไปแล้วจะไปยังหน้า `/user/${user_id}` แล้วแสดงเฉพาะข้อมูลของผู้ใช้คนนั้น พร้อมปุ่มกลับไปยังหน้า `/users`
+### ระบบ Register
+- หาก Password และ Comfirm-Password ไม่ตรงกันให้แสดงข้อความ "Password not match"
+- หาก Username มีใน Database อยู่แล้วให้แสดงข้อความ "Username already exist"
+- หาก Register สำเร็จให้แสดงข้อความ "Register success"
 
-<img src="./images/users.png">
-<img src="./images/user_data.png">
+### สร้างตารางด้วยตัวเอง โดยมีข้อมูลดังนี้
+| Field      | Datatype     | Key                         |
+|------------|--------------|-----------------------------|
+| id         | INT          | primary key, auto increment |
+| username   | VARCHAR(50)  | unique, not null            |
+| password   | VARCHAR(255) | not null                    |
+| first_name | VARCHAR(50)  | not null                    |
+| last_name  | VARCHAR(50)  | not null                    |
+| email      | VARCHAR(100) | not null                    |
